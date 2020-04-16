@@ -8,7 +8,7 @@ source("tab_design.R")
 ui <- navbarPage(
     
     theme = shinytheme("cosmo"),
-    title = "Data Explorer",
+    title = "Omics Data Explorer",
     id = "tabs",
     
     tab_upload,
