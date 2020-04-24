@@ -10,9 +10,11 @@ library(DT)
 source("tab_design.R")
 deseq2_res <- readRDS("./data/deseq2_res_list.rds")[[1]]
 
+
+
 ui <- navbarPage(
     
-    theme = shinytheme("cosmo"),
+    theme = shinytheme("yeti"),
     title = "Omics Data Explorer",
     id = "tabs",
     
@@ -26,7 +28,6 @@ server <- function(input, output) {
 
     output$ph1 <- renderText("Placeholder")
     output$ph2 <- renderText("Placeholder")
-    output$rna_msg <- renderText("Please enter your cutoff:")
     output$ph4 <- renderText("Placeholder")
     
     output$volcano <- renderPlot({
@@ -42,8 +43,10 @@ server <- function(input, output) {
                            color = significant),
                        alpha = 0.5) +
             scale_color_manual(values = c("#bdbdbd", "#de2d26")) +
+            scale_x_continuous(limits = c(max(abs(deseq2_res$log2FoldChange)) * c(-1, 1))) +
             theme(aspect.ratio = 1)
-    })
+    }, height = 700)
+    
     output$table <- DT::renderDataTable({
         deseq2_res %>%
             as.data.frame() %>%

@@ -54,14 +54,27 @@ tab_rna <- tabPanel(
     sidebarLayout(
         
         sidebarPanel = sidebarPanel(
-            textOutput(outputId = "rna_msg"),
-            numericInput("p_co", label = "Adjusted p-value cutoff", value = 0.05),
-            numericInput("lfc_co", label = "Log2 Fold Change cutoff", value = 1),
+            h4("RNA-seq significance cutoff:"),
+            numericInput("p_co", label = "Adjusted p-value Cutoff", value = 0.05),
+            numericInput("lfc_co", label = "Log2 Fold Change Cutoff", value = 1)
         ),
         
         mainPanel(
-            plotOutput("volcano"),
-            DT::dataTableOutput("table")
+            tabsetPanel(
+                tabPanel(
+                    title = "Volcano Plot",
+                    br(),
+                    plotOutput("volcano", width = "100%")
+                ),
+                tabPanel(
+                    title = "Table",
+                    br(),
+                    DT::dataTableOutput("table")
+                ),
+                tabPanel(
+                    title = "Functional Enrichment"
+                )
+            )
         )
     )
     
