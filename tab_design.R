@@ -54,13 +54,14 @@ tab_rna <- tabPanel(
     sidebarLayout(
         
         sidebarPanel = sidebarPanel(
-            
-            
-            
+            textOutput(outputId = "rna_msg"),
+            numericInput("p_co", label = "Adjusted p-value cutoff", value = 0.05),
+            numericInput("lfc_co", label = "Log2 Fold Change cutoff", value = 1),
         ),
         
         mainPanel(
-            textOutput(outputId = "ph3")
+            plotOutput("volcano"),
+            DT::dataTableOutput("table")
         )
     )
     
