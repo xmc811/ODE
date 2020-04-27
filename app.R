@@ -8,6 +8,9 @@ library(DT)
 
 
 source("tab_design.R")
+source("helpers.R")
+source("visualization.R")
+
 deseq2_res <- readRDS("./data/deseq2_res_list.rds")[[1]]
 
 
@@ -31,20 +34,7 @@ server <- function(input, output) {
     output$ph4 <- renderText("Placeholder")
     
     output$volcano <- renderPlot({
-        deseq2_res %>%
-            as.data.frame() %>%
-            rownames_to_column(var = "symbol") %>%
-            as_tibble() %>%
-            mutate(significant = ifelse(padj <= input$p_co & abs(log2FoldChange) >= input$lfc_co, 
-                                        TRUE, FALSE)) %>%
-            ggplot() +
-            geom_point(aes(x = log2FoldChange,
-                           y = -log10(padj),
-                           color = significant),
-                       alpha = 0.5) +
-            scale_color_manual(values = c("#bdbdbd", "#de2d26")) +
-            scale_x_continuous(limits = c(max(abs(deseq2_res$log2FoldChange)) * c(-1, 1))) +
-            theme(aspect.ratio = 1)
+        plot_volcano(deseq2_res, input$p_co, input$lfc_co)
     }, height = 700)
     
     output$table <- DT::renderDataTable({
