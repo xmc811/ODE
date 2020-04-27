@@ -1,5 +1,5 @@
 
-plot_volcano <- function(deseq2, p_co, lfc_co) {
+deseq_volcano <- function(deseq2, p_co, lfc_co) {
     
     deseq2 %<>%
         deseq_transform(p_co, lfc_co)
@@ -14,3 +14,22 @@ plot_volcano <- function(deseq2, p_co, lfc_co) {
         theme(aspect.ratio = 1)
     
 }
+
+
+deseq_table <- function(deseq2, p_co, lfc_co) {
+    
+    deseq2 %<>%
+        deseq_transform(p_co, lfc_co)
+    
+    deseq2 %<>%
+        filter(significant == TRUE) %>%
+        select(symbol:padj) %>%
+        arrange(padj, abs(log2FoldChange)) %>%
+        datatable() %>%
+        formatRound(columns = c(2:5), digits = 3) %>%
+        formatSignif(columns = c(6:7), digits = 3)
+    
+    return(deseq2)
+}
+
+
