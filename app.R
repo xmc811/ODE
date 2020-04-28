@@ -23,7 +23,7 @@ hmks_hs <- gmtPathways("./data/h.all.v7.0.symbols.gmt")
 ui <- navbarPage(
     
     theme = shinytheme("yeti"),
-    title = "Omics Data Explorer",
+    title = "Genomic Data Explorer",
     id = "tabs",
     
     tab_upload,
