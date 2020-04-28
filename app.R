@@ -8,6 +8,7 @@ library(DT)
 library(RColorBrewer)
 library(circlize)
 library(ComplexHeatmap)
+library(scales)
 
 
 source("tab_design.R")
@@ -52,6 +53,10 @@ server <- function(input, output) {
                       input$pca_var, 
                       input$palette_cat)
         }
+    }, height = 600)
+    
+    output$deseq_ma <- renderPlot({
+        deseq_ma(rnaseq[[2]])
     }, height = 600)
     
     output$deseq_volcano <- renderPlot({
