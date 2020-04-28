@@ -9,6 +9,7 @@ library(RColorBrewer)
 library(circlize)
 library(ComplexHeatmap)
 library(scales)
+library(fgsea)
 
 
 source("tab_design.R")
@@ -16,6 +17,8 @@ source("helpers.R")
 source("visualization.R")
 
 rnaseq <- readRDS("./data/rnaseq.rds")
+
+hmks_hs <- gmtPathways("./data/h.all.v7.0.symbols.gmt")
 
 ui <- navbarPage(
     
@@ -66,6 +69,10 @@ server <- function(input, output) {
     output$deseq_table <- DT::renderDataTable({
         deseq_table(rnaseq[[2]], input$p_co, input$lfc_co)
     })
+    
+    output$deseq_gsea <- renderPlot({
+        deseq_gsea(rnaseq[[2]])
+    }, height = 600)
 }
 
 shinyApp(ui = ui, server = server)

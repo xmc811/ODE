@@ -26,3 +26,9 @@ deseq_transform <- function(res, p_co, lfc_co) {
     return(res)
 }
 
+deseq_to_stat <- function(res) {
+    
+    stat <- res$stat
+    names(stat) <- rownames(res)
+    return(stat)
+}

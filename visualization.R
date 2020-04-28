@@ -147,5 +147,26 @@ deseq_table <- function(res, p_co, lfc_co) {
     return(res)
 }
 
-
-
+deseq_gsea <- function(res) {
+    
+    res <- deseq_to_stat(res)
+    
+    gsea_res <- fgsea(pathways = hmks_hs, 
+                      stats = res, 
+                      nperm = 50000)
+    
+    gsea_res %>%
+        mutate(pathway = str_remove(string = pathway, pattern = "HALLMARK_")) %>%
+        mutate(color = -log10(padj) * ifelse(padj <= 0.05, 1, 0) * ifelse(NES > 0, 1, -1)) %>%
+        ggplot() +
+        geom_bar(aes(x = reorder(pathway, NES), y = NES, fill = color), stat = "identity") +
+        scale_fill_gradient2(high = "#d7301f", 
+                              mid = "#f0f0f0",
+                              low = "#0570b0",
+                              midpoint = 0) +
+        coord_flip() +
+        labs(x = "Pathway",
+             fill = "-log10 adjusted p-value") +
+        theme_bw()
+    
+}

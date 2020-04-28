@@ -113,7 +113,9 @@ tab_rna <- tabPanel(
                     plotOutput("deseq_genebox", width = "100%")
                 ),
                 tabPanel(
-                    title = "GSEA"
+                    title = "GSEA",
+                    br(),
+                    plotOutput("deseq_gsea", width = "100%")
                 )
                 
             )
