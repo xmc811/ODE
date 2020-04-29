@@ -12,11 +12,10 @@ tab_upload <- tabPanel(
             h4("Please upload your data:"),
             fileInput(inputId = "data",
                       label = "Data",
-                      buttonLabel = "Browers...",
-                      placeholder = rnaRds),
+                      buttonLabel = "Browers..."),
             br(),
             h3("Data sets used:"),
-            textInput("rdsfile", "RDS data file name", rnaRds),
+            textInput("rdsfile", "RDS data file name"),
             textInput("dnafile", "DNA data file name", dnaMaf),
             textInput("rnafile", "RNA data file name", rnaTsv),
             textInput("rppafile", "RPPA data file name", rppa),
@@ -228,42 +227,4 @@ tab_integrate <- tabPanel(
 
 )
 
-makeMetaTable <- function(dnaMaf, rnaTsv, rppa){
-    metaData <- NULL
-    sid <- NULL
-    if(!missing(dnaMaf)){
-        mat <- read.delim(dnaMaf, sep = "\t", header = TRUE, as.is = TRUE)
-        sid <- getSampleIds(mat, what = "DNA")
-        metaData <- rbind(metaData, c(type = "DNA", file = dnaMaf))
-    }
-    if(!missing(rnaTsv)){
-        mat <- read.delim(rnaTsv, sep = "\t", header = TRUE, as.is = TRUE)
-        sid <- getSampleIds(mat, what = "RNA")
-        metaData <- rbind(metaData, c(type = "RNA", file = rnaTsv))
-    }
-    if(!missing(rppa)){
-        mat <- read.delim(rppa, sep = "\t", header = TRUE, as.is = TRUE)
-        sid <- getSampleIds(mat, what = "RPPA")
-        metaData <- rbind(metaData, c(type = "RPPA", file = rppa))
-    }
-    if(is.null(sid)){
-        stop("DAN or RNA data set is required")
-    }
 
-    return(list(sid = sid, meta = metaData))
-}
-
-getSampleIds <- function(dataMat, what = "DNA"){
-    if(toupper(what) == "DNA"){
-        return(unique(dataMat[, "Tumor_Sample_Barcode"]))
-    }
-    if(toupper(what == "RNA")){
-        return(colnames(dataMat)[-c(1, 2)])
-    }
-    if(toupper(what == "RPPA")){
-        return(dataMat[, "Sample.Name"])
-    }
-    stop("DAN or RNA data set is required")
-
-    return(invisible())
-}

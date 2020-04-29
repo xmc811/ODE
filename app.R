@@ -10,20 +10,21 @@ library(circlize)
 library(ComplexHeatmap)
 library(scales)
 library(fgsea)
+library(maftools)
 
+
+rnaseq <- readRDS("./data/rnaseq.rds")
+hmks_hs <- gmtPathways("./data/h.all.v7.0.symbols.gmt")
+
+# example input files
+
+dnaMaf <- "./data/DNA_filtered__mutect_Pindel_GM_pipe_201002.maf"
+rnaTsv <- "./data/RNA_merged_HTseq_count.tsv"
+rppa <- "./data/IACS__RPPA.txt"
 
 source("tab_design.R")
 source("helpers.R")
 source("visualization.R")
-
-rnaseq <- readRDS("./data/rnaseq.rds")
-
-hmks_hs <- gmtPathways("./data/h.all.v7.0.symbols.gmt")
-
-# example input files
-dnaMaf <- "./data/DNA_filtered__mutect_Pindel_GM_pipe_201002.maf"
-rnaTsv <- "./data/RNA_merged_HTseq_count.tsv"
-rppa <- "./data/IACS__RPPA.txt"
 
 # user interface
 ui <- navbarPage(
@@ -42,8 +43,83 @@ ui <- navbarPage(
 
 # server function
 server <- function(input, output) {
-
-
+    
+    # I/O
+    
+    tempMat <- reactiveValues(mat = NULL)
+    observeEvent(input$submitFiles, {
+        
+        meta <- makeMetaTable(dnaMaf = input$dnafile)
+        
+        output$specifyDnaGenes <- renderUI({
+            textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
+        })
+        
+        output$specifyDnaSamples <- renderUI({
+            textInput("samples", "Name of samples", paste(meta[["sid"]], sep = "", collapse = ";"))
+        })
+        
+        
+        meta <- makeMetaTable(rppa = input$rppafile)
+        
+        output$specifyRppaGenes <- renderUI({
+            textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
+        })
+        
+        output$specifyRppaSamples <- renderUI({
+            textInput("samples", "Name of samples", paste(meta[["sid"]], sep = "", collapse = ";"))
+        })
+        
+        output$ph1 <- renderText("Upload datasets successfully!")
+    })
+    
+    
+    # DNA
+    
+    observeEvent(input$resetDnaGenesSamples, {
+        f <- as.character(input$dnafile)
+        temp <- read.delim(f, sep = "	", header = TRUE, as.is = TRUE)
+        temp <- temp[temp[, "Tumor_Sample_Barcode"] %in% unlist(strsplit(as.character(input$samples), ";")), ]
+        temp <- temp[temp[, "Hugo_Symbol"] %in% unlist(strsplit(as.character(input$genes), ";")), ]
+        tempMat$mat <- read.maf(temp)
+        
+        output$waterfall <- renderPlot({
+            if(is.null(tempMat$mat)){
+                tempMat$mat <- NULL
+            }else{
+                if(class(tempMat$mat) == "MAF"){
+                    require(maftools)
+                    oncoplot(tempMat$mat, draw_titv = TRUE)
+                }
+            }
+        })
+        
+        output$mafSummary <- renderPlot({
+            if(is.null(tempMat$mat)){
+                tempMat$mat <- NULL
+            }else{
+                if(class(tempMat$mat) == "MAF"){
+                    require(maftools)
+                    plotmafSummary(maf = tempMat$mat, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
+                }
+            }
+        })
+        
+        output$vafPlot <- renderPlot({
+            if(is.null(tempMat$mat)){
+                tempMat$mat <- NULL
+            }else{
+                if(class(tempMat$mat) == "MAF"){
+                    require(maftools)
+                    plotVaf(maf = tempMat$mat, vafCol = 'VAF', top = 30)
+                }
+            }
+        })
+        
+    })
+    
+    
+    # RNA
     
     output$deseq_hm <- renderPlot({
         deseq_heatmap(rnaseq[[1]], 
@@ -81,79 +157,8 @@ server <- function(input, output) {
         deseq_gsea(rnaseq[[2]])
     }, height = 600)
     
-    
-    tempMat <- reactiveValues(mat = NULL)
-    observeEvent(input$submitFiles, {
 
-        meta <- makeMetaTable(dnaMaf = input$dnafile)
-        output$specifyDnaGenes <- renderUI({
-            textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
-        })
-        output$specifyDnaSamples <- renderUI({
-            textInput("samples", "Name of samples", paste(meta[["sid"]], sep = "", collapse = ";"))
-        })
-
-        meta <- makeMetaTable(rnaTsv = input$rnafile)
-        output$specifyRnaGenes <- renderUI({
-            textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
-        })
-        output$specifyRnaSamples <- renderUI({
-            textInput("samples", "Name of samples", paste(meta[["sid"]], sep = "", collapse = ";"))
-        })
-
-        meta <- makeMetaTable(rppa = input$rppafile)
-        output$specifyRppaGenes <- renderUI({
-            textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
-        })
-        output$specifyRppaSamples <- renderUI({
-            textInput("samples", "Name of samples", paste(meta[["sid"]], sep = "", collapse = ";"))
-        })
-
-        output$ph1 <- renderText("Upload datasets successfully!")
-    })
-
-    observeEvent(input$resetDnaGenesSamples, {
-        f <- as.character(input$dnafile)
-        temp <- read.delim(f, sep = "	", header = TRUE, as.is = TRUE)
-        temp <- temp[temp[, "Tumor_Sample_Barcode"] %in% unlist(strsplit(as.character(input$samples), ";")), ]
-        temp <- temp[temp[, "Hugo_Symbol"] %in% unlist(strsplit(as.character(input$genes), ";")), ]
-        tempMat$mat <- read.maf(temp)
-
-        output$waterfall <- renderPlot({
-            if(is.null(tempMat$mat)){
-                tempMat$mat <- NULL
-            }else{
-                if(class(tempMat$mat) == "MAF"){
-                    require(maftools)
-                    oncoplot(tempMat$mat, draw_titv = TRUE)
-                }
-            }
-        })
-
-        output$mafSummary <- renderPlot({
-            if(is.null(tempMat$mat)){
-                tempMat$mat <- NULL
-            }else{
-                if(class(tempMat$mat) == "MAF"){
-                    require(maftools)
-                    plotmafSummary(maf = tempMat$mat, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
-                }
-            }
-        })
-
-        output$vafPlot <- renderPlot({
-            if(is.null(tempMat$mat)){
-                tempMat$mat <- NULL
-            }else{
-                if(class(tempMat$mat) == "MAF"){
-                    require(maftools)
-                    plotVaf(maf = tempMat$mat, vafCol = 'VAF', top = 30)
-                }
-            }
-        })
-
-    })
-
+    # RPPA
 
     observeEvent(input$resetRppaGenesSamples, {
         f <- as.character(input$rppafile)
