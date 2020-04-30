@@ -21,8 +21,11 @@ deseq_transform <- function(res, p_co, lfc_co) {
         rownames_to_column(var = "symbol") %>%
         as_tibble() %>%
         filter(!is.na(padj)) %>%
-        mutate(significant = ifelse(padj <= p_co & abs(log2FoldChange) >= lfc_co, 
-                                    TRUE, FALSE))
+        mutate(significant = ifelse(padj <= p_co & log2FoldChange >= lfc_co, 
+                                    "Up",
+                                    ifelse(padj <= p_co & log2FoldChange <= -lfc_co, 
+                                           "Down", 
+                                           "Not Sig")))
     return(res)
 }
 

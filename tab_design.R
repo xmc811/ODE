@@ -12,7 +12,7 @@ tab_upload <- tabPanel(
             h4("Please upload your data:"),
             fileInput(inputId = "data",
                       label = "Data",
-                      buttonLabel = "Browers..."),
+                      buttonLabel = "Browse..."),
             br(),
             h3("Data sets used:"),
             textInput("rdsfile", "RDS data file name"),
@@ -85,31 +85,43 @@ tab_rna <- tabPanel(
             br(),
             
             h4("Differential Gene Expression Parameters"),
-            numericInput("p_co", label = "Adjusted p-value Cutoff", value = 0.05),
-            numericInput("lfc_co", label = "Log2 Fold Change Cutoff", value = 1),
+            splitLayout(numericInput("p_co", label = "Adjusted P-value Cutoff", value = 0.05),
+                        numericInput("lfc_co", label = "Log2 Fold Change Cutoff", value = 1)),
             br(),
-            
+            h4("Gene List"),
+            fileInput(inputId = "rna_genes",
+                      label = NULL,
+                      buttonLabel = "Browse..."),
+            br(),
             h4("Plotting Parameters"),
-            selectInput(inputId = "palette_cat", 
-                            label = "Palette (Categorical Variable)",
-                            choices = rownames(brewer.pal.info[brewer.pal.info$category == "qual",]),
-                            selected = "Set1"),
-            selectInput(inputId = "palette_con", 
-                            label = "Palette (Continuous Variable)",
-                            choices = rownames(brewer.pal.info[brewer.pal.info$category != "qual",]),
-                            selected = "BuPu"),
+            splitLayout(selectInput(inputId = "palette_cat", 
+                                    label = "Categorical Palette",
+                                    choices = rownames(brewer.pal.info[brewer.pal.info$category == "qual",]),
+                                    selected = "Set1"),
+                        selectInput(inputId = "palette_con", 
+                                    label = "Continuous Palette",
+                                    choices = rownames(brewer.pal.info[brewer.pal.info$category != "qual",]),
+                                    selected = "BuPu")),
             checkboxInput(inputId = "palette_dir",
                           label = "Reverse Scale Color Direction",
                           value = FALSE),
+            splitLayout(numericInput("p_plot_lim", label = "Adjusted P-value Squash", value = 5),
+                        numericInput("lfc_plot_lim", label = "Log2 Fold Change Squash", value = 5)),
+            tags$head(tags$style(HTML("
+                              .shiny-split-layout > div {
+                                overflow: visible;
+                              }
+                              "))),
             br()
         ),
         
         mainPanel(
             tabsetPanel(
+                id = "rna_panel",
                 tabPanel(
                     title = "Heatmap",
                     br(),
-                    plotOutput("deseq_hm", width = "100%")
+                    plotOutput("deseq_hm")
                 ),
                 tabPanel(
                     title = "PCA",
@@ -119,12 +131,14 @@ tab_rna <- tabPanel(
                 tabPanel(
                     title = "MA Plot",
                     br(),
-                    plotOutput("deseq_ma", width = "100%")
+                    plotOutput("deseq_ma", width = "100%"),
                 ),
                 tabPanel(
                     title = "Volcano Plot",
                     br(),
-                    plotOutput("deseq_volcano", width = "100%")
+                    plotOutput("deseq_volcano"),
+                    br(),
+                    uiOutput("pt_color")
                 ),
                 tabPanel(
                     title = "Table",
@@ -141,7 +155,6 @@ tab_rna <- tabPanel(
                     br(),
                     plotOutput("deseq_gsea", width = "100%")
                 )
-                
             )
         )
     )

@@ -142,11 +142,18 @@ server <- function(input, output) {
     }, height = 600)
     
     output$deseq_ma <- renderPlot({
-        deseq_ma(rnaseq[[2]])
+        deseq_ma(rnaseq[[2]],
+                 input$p_co, 
+                 input$lfc_co,
+                 input$lfc_plot_lim)
     }, height = 600)
     
     output$deseq_volcano <- renderPlot({
-        deseq_volcano(rnaseq[[2]], input$p_co, input$lfc_co)
+        deseq_volcano(rnaseq[[2]], 
+                      input$p_co, 
+                      input$lfc_co,
+                      input$p_plot_lim,
+                      input$lfc_plot_lim)
     }, height = 600)
     
     output$deseq_table <- DT::renderDataTable({
@@ -157,7 +164,7 @@ server <- function(input, output) {
         deseq_gsea(rnaseq[[2]])
     }, height = 600)
     
-
+    
     # RPPA
 
     observeEvent(input$resetRppaGenesSamples, {

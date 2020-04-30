@@ -49,84 +49,65 @@ deseq_pca <- function(dds, var, palette, dir) {
     }
 }
 
-deseq_ma <- function(res, ylim = c(-4,4), p_cutoff = 0.1) {
-    
-    resDF <- res %>%
-        as.data.frame() %>%
-        rownames_to_column(var = "Symbol") %>%
-        as_tibble()
-    
-    stt <- c()
-    
-    stt[1] <- resDF %>%
-        filter(padj < p_cutoff) %>%
-        filter(log2FoldChange > 0) %>%
-        nrow()
-    stt[2] <- resDF %>%
-        filter(padj < p_cutoff) %>%
-        filter(log2FoldChange < 0) %>%
-        nrow()
-    stt[3] <- resDF %>%
-        filter(is.na(pvalue)) %>%
-        nrow()
-    
-    pct <- paste0(round(stt / nrow(resDF) * 100,1), "%")
-    
-    resDF %>%
-        drop_na() %>%
-        mutate(shape = ifelse(log2FoldChange > ylim[2] | log2FoldChange < ylim[1], TRUE, FALSE),
-               log2FoldChange = replace(log2FoldChange, log2FoldChange > ylim[2], ylim[2] * 1.05),
-               log2FoldChange = replace(log2FoldChange, log2FoldChange < ylim[1], ylim[1] * 1.05)) %>%
-        arrange(-padj) %>%
-        ggplot() +
-        geom_point(aes(x = baseMean, 
-                       y = log2FoldChange, 
-                       color = ifelse(padj < p_cutoff, TRUE, FALSE), 
-                       shape = shape,
-                       alpha = factor(ifelse(padj < p_cutoff, 1, 0.8)))) +
-        scale_color_manual(values = c("black", "#e31a1c"), 
-                           labels = c(paste("\u2265", p_cutoff),paste("<",p_cutoff)), 
-                           name = "Adjusted p-value") +
-        scale_shape_manual(values = c(16, 17), guide = FALSE) +
-        scale_alpha_manual(values = c(0.25, 1), guide = FALSE) +
-        scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                      labels = trans_format("log10", math_format(10^.x))) +
-        theme_bw() +
-        labs(y = expression(Log[2]~Fold~Change), x = "Mean of Normalized Count") +
-        theme(legend.position = "bottom",
-              plot.margin = unit(rep(1,4), "cm"),
-              axis.text = element_text(size = 12),
-              axis.title = element_text(size = 14)) +
-        geom_hline(yintercept = 0, color = "#80b1d3", size = 1.5, alpha = 0.5) +
-        annotation_logticks(sides = "b") +
-        annotate("text", 
-                 x = 10 ^ (ceiling(log10(max(resDF$baseMean))) * 0.75), 
-                 y = -Inf, 
-                 hjust = 0,
-                 vjust = -0.5,
-                 label = paste0("Out of ", nrow(res), " genes:", "\n",
-                                "Adjusted p-value < ", p_cutoff, "\n",
-                                "LFC > 0 (up): ", stt[1], ", ", pct[1], "\n",
-                                "LFC < 0 (down): ", stt[2], ", ", pct[2], "\n",
-                                "Gene outliers: ", stt[3], ", ", pct[3]))
-}
-
-
-
-deseq_volcano <- function(res, p_co, lfc_co) {
+deseq_ma <- function(res, p_co, lfc_co, lfc_plot_lim = 5) {
     
     res %<>%
         deseq_transform(p_co, lfc_co)
     
-        ggplot(res) +
+    res %>%
+        mutate(shape = ifelse(log2FoldChange > lfc_plot_lim | log2FoldChange < -lfc_plot_lim, TRUE, FALSE),
+               log2FoldChange = replace(log2FoldChange, log2FoldChange > lfc_plot_lim, lfc_plot_lim),
+               log2FoldChange = replace(log2FoldChange, log2FoldChange < -lfc_plot_lim, -lfc_plot_lim)) %>%
+        arrange(factor(significant, levels = c("Not Sig","Down","Up"))) %>%
+        ggplot() +
+        geom_point(aes(x = log10(baseMean), 
+                       y = log2FoldChange, 
+                       color = significant, 
+                       shape = shape),
+                   size = 2) +
+        scale_color_manual(values = c("#1f78b4","#d9d9d9", "#e31a1c")) +
+        scale_shape_manual(values = c(16, 17)) +
+        theme_bw() +
+        labs(y = expression(Log[2]~Fold~Change), x = expression(Log[10]~Mean~Normalized~Count)) +
+        theme(legend.position = "none",
+              plot.margin = unit(rep(1,4), "cm"),
+              axis.text = element_text(size = 12),
+              axis.title = element_text(size = 14)) +
+        geom_hline(yintercept = 0, color = "#984ea3", size = 1.5, alpha = 0.5)
+}
+
+
+
+deseq_volcano <- function(res, p_co, lfc_co, 
+                          p_plot_lim = 5, 
+                          lfc_plot_lim = 5) {
+    
+    res %<>%
+        deseq_transform(p_co, lfc_co)
+    
+    res %>%
+        mutate(shape1 = ifelse(log2FoldChange > lfc_plot_lim | log2FoldChange < -lfc_plot_lim, TRUE, FALSE),
+               log2FoldChange = replace(log2FoldChange, log2FoldChange > lfc_plot_lim, lfc_plot_lim),
+               log2FoldChange = replace(log2FoldChange, log2FoldChange < -lfc_plot_lim, -lfc_plot_lim)) %>%
+        mutate(shape2 = ifelse(-log10(padj) > p_plot_lim, TRUE, FALSE),
+               padj = ifelse(-log10(padj) > p_plot_lim, 10^(-p_plot_lim), padj),
+               shape = shape1 | shape2) %>%
+        arrange(factor(significant, levels = c("Not Sig","Down","Up"))) %>%
+        ggplot() +
         geom_point(aes(x = log2FoldChange,
                        y = -log10(padj),
-                       color = significant),
-                   alpha = 0.5) +
-        scale_color_manual(values = c("#bdbdbd", "#de2d26")) +
-        scale_x_continuous(limits = c(max(abs(res$log2FoldChange)) * c(-1, 1))) +
+                       color = significant,
+                       shape = factor(shape)),
+                   size = 2) +
+        scale_color_manual(values = c("#1f78b4","#d9d9d9", "#e31a1c")) +
+            scale_shape_manual(values = c(16, 17), guide = FALSE) +
         theme_bw() +
-        theme(aspect.ratio = 1)
+        labs(y = expression(-Log[10]~Adjusted~p-value), x = expression(Log[2]~Fold~Change)) +
+        theme(aspect.ratio = 1,
+              legend.position = "none",
+              plot.margin = unit(rep(1,4), "cm"),
+              axis.text = element_text(size = 12),
+              axis.title = element_text(size = 14))
     
 }
 
@@ -137,7 +118,7 @@ deseq_table <- function(res, p_co, lfc_co) {
         deseq_transform(p_co, lfc_co)
     
     res %<>%
-        filter(significant == TRUE) %>%
+        filter(significant != "Not Sig") %>%
         select(symbol:padj) %>%
         arrange(padj, abs(log2FoldChange)) %>%
         datatable() %>%
