@@ -128,6 +128,47 @@ deseq_table <- function(res, p_co, lfc_co) {
     return(res)
 }
 
+deseq_cluster <- function(dds, res, palette, dir) {
+    
+    mtx <- get_mtx_dds(dds, res)
+        
+    mtx %<>%
+        mtx_rescale()
+        
+        num <- num_colors(palette)
+        colors <- brewer.pal(num, palette)
+        
+        if (dir) {
+            colors <- rev(colors)
+        }
+        
+        col_fun <- colorRamp2(seq(from = -1, 
+                                  to = 1, 
+                                  length.out = num), colors)
+        
+        Heatmap(mtx, 
+                col = col_fun,
+                rect_gp = gpar(col = "white", lwd = 2),
+                width = unit(20, "cm"), height = unit(20, "cm"))
+        
+}
+
+
+deseq_box <- function(dds, res, var, palette) {
+    
+    df <- get_nm_count_dds(rnaseq[[1]], rnaseq[[2]], var)
+    
+    ggplot(df) +
+        geom_boxplot(aes(x = !!sym(var),
+                         y = log10(count),
+                         fill = !!sym(var))) +
+        geom_point(aes(x = !!sym(var),
+                       y = log10(count))) +
+        facet_wrap(~symbol) +
+        scale_fill_brewer(palette = palette)
+}
+
+
 deseq_gsea <- function(res) {
     
     res <- deseq_to_stat(res)

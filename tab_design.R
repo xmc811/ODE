@@ -92,6 +92,9 @@ tab_rna <- tabPanel(
             fileInput(inputId = "rna_genes",
                       label = NULL,
                       buttonLabel = "Browse..."),
+            checkboxInput(inputId = "rna_top_gene",
+                          label = "Use top genes",
+                          value = FALSE),
             br(),
             h4("Plotting Parameters"),
             splitLayout(selectInput(inputId = "palette_cat", 
@@ -146,9 +149,14 @@ tab_rna <- tabPanel(
                     DT::dataTableOutput("deseq_table")
                 ),
                 tabPanel(
-                    title = "Gene-wise Boxplot",
+                    title = "Gene Boxplot",
                     br(),
-                    plotOutput("deseq_genebox", width = "100%")
+                    plotOutput("deseq_box", width = "100%")
+                ),
+                tabPanel(
+                    title = "Gene Clustering",
+                    br(),
+                    plotOutput("deseq_cluster", width = "100%")
                 ),
                 tabPanel(
                     title = "GSEA",

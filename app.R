@@ -160,6 +160,20 @@ server <- function(input, output) {
         deseq_table(rnaseq[[2]], input$p_co, input$lfc_co)
     })
     
+    output$deseq_box <- renderPlot({
+        deseq_box(rnaseq[[1]], 
+                      rnaseq[[2]], 
+                      input$pca_var, 
+                      input$palette_cat)
+    }, height = 700, width = 800)
+    
+    output$deseq_cluster <- renderPlot({
+        deseq_cluster(rnaseq[[1]], 
+                      rnaseq[[2]], 
+                      input$palette_con, 
+                      input$palette_dir)
+    }, height = 700)
+    
     output$deseq_gsea <- renderPlot({
         deseq_gsea(rnaseq[[2]])
     }, height = 600)
