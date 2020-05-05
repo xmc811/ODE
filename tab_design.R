@@ -47,27 +47,31 @@ tab_dna <- tabPanel(
             h4("Specify genes and samples:"),
             textInput(inputId = "genes", label = "Name of genes", value = "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K"),
             textInput(inputId = "samples", label = "Name of samples"),
+            conditionalPanel(condition="input.dnaTabSelected==9",
+                             textInput(inputId = "pathways", label = "Name of pathways", value = "RTK-RAS")),
+            conditionalPanel(condition="input.dnaTabSelected==10",
+                             textInput(inputId = "vafColumn", label = "Column of VAF", value = "VAF")),
             actionButton(inputId = "resetDnaGenesSamples", label = "Run")
         ),
 
         mainPanel(
-            tabsetPanel(
-                tabPanel(
+            tabsetPanel( id = "dnaTabSelected",
+                tabPanel( value = 1,
                     title = "Waterfall Plot",
                     br(),
                     plotOutput("waterfall")
                 ),
-                tabPanel(
+                tabPanel( value = 2,
                     title = "Summary Plot",
                     br(),
                     plotOutput("mafSummary")
                 ),
-                tabPanel(
+                tabPanel( value = 3,
                     title = "TiTv Plot",
                     br(),
                     plotOutput("titvPlot")
                 ),
-                tabPanel(
+                tabPanel( value = 4,
                     title = "Lollipop Plot",
                     br(),
                     plotOutput("lollipopPlot1"),
@@ -76,7 +80,7 @@ tab_dna <- tabPanel(
                     br(),
                     plotOutput("lollipopPlot3")
                 ),
-                tabPanel(
+                tabPanel( value = 5,
                     title = "Rainfall Plot",
                     br(),
                     plotOutput("rainfallPlot1"),
@@ -85,29 +89,29 @@ tab_dna <- tabPanel(
                     br(),
                     plotOutput("rainfallPlot3")
                 ),
-                tabPanel(
+                tabPanel( value = 6,
                     title = "TCGA Compare",
                     br(),
                     plotOutput("tcgaCompare")
                 ),
-                tabPanel(
+                tabPanel( value = 7,
                     title = "Somatic Interactions",
                     br(),
                     plotOutput("somaticInteract", width = "100%", height = 700)
                 ),
-                tabPanel(
+                tabPanel( value = 8,
                     title = "Drug-Gene Interactions",
                     br(),
                     plotOutput("drugInteract")
                 ),
-                tabPanel(
+                tabPanel( value = 9,
                     title = "Oncogenic Signaling Pathways",
                     br(),
                     plotOutput("oncogenicPathway1"),
                     br(),
                     plotOutput("oncogenicPathway2")
                 ),
-                tabPanel(
+                tabPanel( value = 10,
                     title = "VAF Plot",
                     br(),
                     plotOutput("vafPlot")
