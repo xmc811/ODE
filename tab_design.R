@@ -24,7 +24,12 @@ tab_upload <- tabPanel(
         ),
 
         mainPanel(
-            textOutput(outputId = "ph1")
+            br(),
+            textOutput(outputId = "ph1"),
+            br(),
+            textOutput(outputId = "ph2"),
+            br(),
+            textOutput(outputId = "ph3")
         )
     )
 
@@ -40,9 +45,9 @@ tab_dna <- tabPanel(
 
         sidebarPanel = sidebarPanel(
             h4("Specify genes and samples:"),
-            uiOutput("specifyDnaGenes"),
-            uiOutput("specifyDnaSamples"),
-            actionButton("resetDnaGenesSamples", "Reset")
+            textInput(inputId = "genes", label = "Name of genes", value = "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K"),
+            textInput(inputId = "samples", label = "Name of samples"),
+            actionButton(inputId = "resetDnaGenesSamples", label = "Run")
         ),
 
         mainPanel(
@@ -58,6 +63,51 @@ tab_dna <- tabPanel(
                     plotOutput("mafSummary")
                 ),
                 tabPanel(
+                    title = "TiTv Plot",
+                    br(),
+                    plotOutput("titvPlot")
+                ),
+                tabPanel(
+                    title = "Lollipop Plot",
+                    br(),
+                    plotOutput("lollipopPlot1"),
+                    br(),
+                    plotOutput("lollipopPlot2"),
+                    br(),
+                    plotOutput("lollipopPlot3")
+                ),
+                tabPanel(
+                    title = "Rainfall Plot",
+                    br(),
+                    plotOutput("rainfallPlot1"),
+                    br(),
+                    plotOutput("rainfallPlot2"),
+                    br(),
+                    plotOutput("rainfallPlot3")
+                ),
+                tabPanel(
+                    title = "TCGA Compare",
+                    br(),
+                    plotOutput("tcgaCompare")
+                ),
+                tabPanel(
+                    title = "Somatic Interactions",
+                    br(),
+                    plotOutput("somaticInteract", width = "100%", height = 700)
+                ),
+                tabPanel(
+                    title = "Drug-Gene Interactions",
+                    br(),
+                    plotOutput("drugInteract")
+                ),
+                tabPanel(
+                    title = "Oncogenic Signaling Pathways",
+                    br(),
+                    plotOutput("oncogenicPathway1"),
+                    br(),
+                    plotOutput("oncogenicPathway2")
+                ),
+                tabPanel(
                     title = "VAF Plot",
                     br(),
                     plotOutput("vafPlot")
@@ -70,13 +120,13 @@ tab_dna <- tabPanel(
 
 
 tab_rna <- tabPanel(
-    
+
     title = "RNA-seq",
     fluid = TRUE,
     value = "v_rna",
-    
+
     sidebarLayout(
-        
+
         sidebarPanel = sidebarPanel(
             h4("Variable"),
             selectInput(inputId = "pca_var", 
@@ -216,19 +266,19 @@ tab_rppa <- tabPanel(
 )
 
 tab_scrna <- tabPanel(
-    
+
     title = "scRNA-seq",
     fluid = TRUE,
     value = "v_scrna",
-    
+
     sidebarLayout(
-        
+
         sidebarPanel = sidebarPanel(
-            
-            
-            
+
+
+
         ),
-        
+
         mainPanel(
             textOutput(outputId = "ph4")
         )
@@ -257,4 +307,30 @@ tab_integrate <- tabPanel(
 
 )
 
-
+tab_about <- tabPanel(
+    
+    title = "About",
+    fluid = TRUE,
+    value = "v_about",
+    
+    sidebarLayout(
+        
+        sidebarPanel = sidebarPanel(
+            
+            
+            
+        ),
+        
+        mainPanel(
+            br(),
+            h4("Authors:"),
+            br(),
+            h4("Mingchu Xu"),
+            br(),
+            h4("Xiaogang (Sean) Wu"),
+            br(),
+            h4("Jianhua (John) Zhang")
+        )
+    )
+    
+)
