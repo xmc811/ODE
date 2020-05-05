@@ -38,73 +38,112 @@ ui <- navbarPage(
     tab_rna,
     tab_rppa,
     tab_scrna,
-    tab_integrate
+    tab_integrate,
+    tab_about
 )
 
 # server function
-server <- function(input, output) {
+server <- function(input, output, session) {
 
     # I/O
 
     tempMat <- reactiveValues(mat = NULL)
     observeEvent(input$submitFiles, {
+        
+        # input DNA-Seq dataset
+        output$ph1 <- renderText("")
+        f <- as.character(input$dnafile)
+        temp <- read.delim(f, sep = "	", header = TRUE, as.is = TRUE)
+        tempMat$mat <- read.maf(temp, useAll = FALSE)
+        geneList_sorted <- unlist(getGeneSummary(tempMat$mat)[, 1])
+        sampleList_sorted <- unlist(getSampleSummary(tempMat$mat)[, 1])
+        geneList <- paste0(geneList_sorted[1:20], collapse = ";")
+        sampleList <- paste0(sampleList_sorted, collapse = ";")
+        updateTextInput(session, inputId = "genes", value = geneList)
+        updateTextInput(session, inputId = "samples", value = sampleList)
+        output$ph1 <- renderText(paste("Upload dataset successfully! -", basename(input$dnafile)))
 
-        meta <- makeMetaTable(dnaMaf = input$dnafile)
-
-        output$specifyDnaGenes <- renderUI({
-            textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
-        })
-
-        output$specifyDnaSamples <- renderUI({
-            textInput("samples", "Name of samples", paste(meta[["sid"]], sep = "", collapse = ";"))
-        })
-
-
-        meta <- makeMetaTable(rppa = input$rppafile)
-
+        # input RPPA dataset
+        output$ph3 <- renderText("")
+        rppaMeta <- makeMetaTable(rppa = input$rppafile)
         output$specifyRppaGenes <- renderUI({
             textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
         })
-
         output$specifyRppaSamples <- renderUI({
-            textInput("samples", "Name of samples", paste(meta[["sid"]], sep = "", collapse = ";"))
+            textInput("samples", "Name of samples", paste(rppaMeta[["sid"]], sep = "", collapse = ";"))
         })
-
-        output$ph1 <- renderText("Upload datasets successfully!")
+        output$ph3 <- renderText(paste("Upload dataset successfully! -", basename(input$rppafile)))
     })
 
 
     # DNA
 
     observeEvent(input$resetDnaGenesSamples, {
-        f <- as.character(input$dnafile)
-        temp <- read.delim(f, sep = "	", header = TRUE, as.is = TRUE)
-        temp <- temp[temp[, "Tumor_Sample_Barcode"] %in% unlist(strsplit(as.character(input$samples), ";")), ]
-        temp <- temp[temp[, "Hugo_Symbol"] %in% unlist(strsplit(as.character(input$genes), ";")), ]
-        tempMat$mat <- read.maf(temp)
-
+        selectedGenes <- unlist(strsplit(as.character(input$genes), ";"))
+        selectedSamples <- unlist(strsplit(as.character(input$samples), ";"))
+        maf <- subsetMaf(tempMat$mat, tsb = selectedSamples)
+        
+        # 1) Waterfall Plot
         output$waterfall <- renderPlot({
-            if(is.null(tempMat$mat)){
-                tempMat$mat <- NULL
-            }else{
-                oncoplot(tempMat$mat, draw_titv = TRUE)
-            }
+            oncoplot(maf = maf, genes = selectedGenes, gene_mar = 10, draw_titv = TRUE)
         })
-
+        # 2) Summary Plot
         output$mafSummary <- renderPlot({
+            plotmafSummary(maf = tempMat$mat, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
+        })
+        # 3) TiTv Plot
+        output$titvPlot <- renderPlot({
             if(is.null(tempMat$mat)){
                 tempMat$mat <- NULL
             }else{
-                plotmafSummary(maf = tempMat$mat, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
+                titv(maf = tempMat$mat, plot = TRUE, useSyn = TRUE)
             }
         })
-
+        # 4) Lollipop Plot
+        output$lollipopPlot1 <- renderPlot({
+            lollipopPlot(maf = tempMat$mat, gene = selectedGenes[1], AACol = 'Protein_Change', showMutationRate = TRUE, showDomainLabel = TRUE,
+                         repel = TRUE, labPosAngle = 45, labelPos = 'all')
+        })
+        output$lollipopPlot2 <- renderPlot({
+            lollipopPlot(maf = tempMat$mat, gene = selectedGenes[2], AACol = 'Protein_Change', showMutationRate = TRUE, showDomainLabel = TRUE,
+                         repel = TRUE, labPosAngle = 45, labelPos = 'all')
+        })
+        output$lollipopPlot3 <- renderPlot({
+            lollipopPlot(maf = tempMat$mat, gene = selectedGenes[3], AACol = 'Protein_Change', showMutationRate = TRUE, showDomainLabel = TRUE,
+                         repel = TRUE, labPosAngle = 45, labelPos = 'all')
+        })
+        # 5) Rainfall Plot
+        output$rainfallPlot1 <- renderPlot({
+            rainfallPlot(maf = tempMat$mat, tsb = selectedSamples[1], ref.build = "hg19", detectChangePoints = TRUE, pointSize = 0.6)
+        })
+        output$rainfallPlot2 <- renderPlot({
+            rainfallPlot(maf = tempMat$mat, tsb = selectedSamples[2], ref.build = "hg19", detectChangePoints = TRUE, pointSize = 0.6)
+        })
+        output$rainfallPlot3 <- renderPlot({
+            rainfallPlot(maf = tempMat$mat, tsb = selectedSamples[3], ref.build = "hg19", detectChangePoints = TRUE, pointSize = 0.6)
+        })
+        # 6) TCGA Compare
+        output$tcgaCompare <- renderPlot({
+            maf.mutload = tcgaCompare(maf = tempMat$mat, cohortName = "Input")
+        })
+        # 7) 
+        output$somaticInteract <- renderPlot({
+            somaticInteractions(maf = tempMat$mat, top = 20, pvalue = c(0.05, 0.1))
+        })
+        # 8) 
+        output$drugInteract <- renderPlot({
+            dgi = drugInteractions(maf = tempMat$mat, fontSize = 0.75)
+        })
+        # 9) 
+        output$oncogenicPathway1 <- renderPlot({
+            pathwayList <- OncogenicPathways(maf = tempMat$mat)[, 1]
+        })
+        output$oncogenicPathway2 <- renderPlot({
+            PlotOncogenicPathways(maf = tempMat$mat, pathways = unlist(pathwayList[10]))
+        })
+        # 10) 
         output$vafPlot <- renderPlot({
-            if(is.null(tempMat$mat)){
-                tempMat$mat <- NULL
-            }else{
-                plotVaf(maf = tempMat$mat, vafCol = 'VAF', top = 30)
-            }
+            plotVaf(maf = tempMat$mat, vafCol = 'VAF', top = 30)
         })
 
     })
@@ -183,3 +222,4 @@ server <- function(input, output) {
 }
 
 shinyApp(ui = ui, server = server)
+
