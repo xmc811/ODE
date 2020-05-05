@@ -48,10 +48,38 @@ server <- function(input, output, session) {
     # I/O
 
     tempMat <- reactiveValues(mat = NULL)
+    
+    observeEvent(input$dnafile, {
+        output$ph1 <- NULL
+        output$ph2 <- NULL
+        output$ph3 <- NULL
+        output$waterfall <- NULL
+        output$mafSummary <- NULL
+        output$titvPlot <- NULL
+        output$lollipopPlot1 <- NULL
+        output$lollipopPlot2 <- NULL
+        output$lollipopPlot3 <- NULL
+        output$rainfallPlot1 <- NULL
+        output$rainfallPlot2 <- NULL
+        output$rainfallPlot3 <- NULL
+        output$tcgaCompare <- NULL
+        output$somaticInteract <- NULL
+        output$drugInteract <- NULL
+        output$oncogenicPathway1 <- NULL
+        output$oncogenicPathway2 <- NULL
+        output$vafPlot <- NULL
+    })
+    
+    observeEvent(input$rppafile, {
+        output$ph1 <- NULL
+        output$ph2 <- NULL
+        output$ph3 <- NULL
+        output$clusterRppa <- NULL
+    })
+    
     observeEvent(input$submitFiles, {
         
         # input DNA-Seq dataset
-        output$ph1 <- renderText("")
         f <- as.character(input$dnafile)
         temp <- read.delim(f, sep = "	", header = TRUE, as.is = TRUE)
         tempMat$mat <- read.maf(temp, useAll = FALSE)
@@ -64,7 +92,7 @@ server <- function(input, output, session) {
         output$ph1 <- renderText(paste("Upload dataset successfully! -", basename(input$dnafile)))
 
         # input RPPA dataset
-        output$ph3 <- renderText("")
+        
         rppaMeta <- makeMetaTable(rppa = input$rppafile)
         output$specifyRppaGenes <- renderUI({
             textInput("genes", "Name of genes", "EGFR;TP53;RB1;ALK;AML1;TERT;KRAS;PI3K")
@@ -136,14 +164,17 @@ server <- function(input, output, session) {
         })
         # 9) 
         output$oncogenicPathway1 <- renderPlot({
-            pathwayList <- OncogenicPathways(maf = tempMat$mat)[, 1]
+            pathwayList_sorted <- OncogenicPathways(maf = tempMat$mat)[, 1]
+            pathwayList <- paste0(unlist(pathwayList_sorted), collapse = ";")
+            updateTextInput(session, inputId = "pathways", value = pathwayList)
         })
         output$oncogenicPathway2 <- renderPlot({
-            PlotOncogenicPathways(maf = tempMat$mat, pathways = unlist(pathwayList[10]))
+            selectedPathways <- unlist(strsplit(as.character(input$pathways), ";"))
+            PlotOncogenicPathways(maf = tempMat$mat, pathways = unlist(selectedPathways[1]))
         })
         # 10) 
         output$vafPlot <- renderPlot({
-            plotVaf(maf = tempMat$mat, vafCol = 'VAF', top = 30)
+            plotVaf(maf = tempMat$mat, vafCol = input$vafColumn, top = 30)
         })
 
     })
