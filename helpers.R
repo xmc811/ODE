@@ -1,4 +1,25 @@
 
+df_to_signature <- function(df) {
+    
+    colnames(df) <- c("pathway", "gene")
+    
+    pathways <- unique(df[[1]])
+    
+    sig <- list()
+    
+    for (i in seq_along(1:length(pathways))) {
+        
+        sig[[i]] <- df %>%
+            filter(pathway == pathways[i]) %>%
+            pull(gene)
+    }
+    
+    names(sig) <- pathways
+    
+    return(sig)
+}
+
+
 deseq_format_test <- function(rds) {
     
     if ((class(rds[[1]]) == "DESeqDataSet") & (class(rds[[2]]) == "DESeqResults")) {
@@ -29,7 +50,7 @@ deseq_transform <- function(res, p_co, lfc_co) {
     return(res)
 }
 
-get_mtx_dds <- function(dds, res, raw = F) {
+get_mtx_dds <- function(dds, res, genes, usetop, raw = F) {
     
     if (raw) {
         vsd <- counts(dds)
@@ -41,25 +62,29 @@ get_mtx_dds <- function(dds, res, raw = F) {
     res %<>%
         deseq_transform(p_co = 1, lfc_co = 0)
     
-    genes <- res %>%
-        arrange(desc(abs(log2FoldChange))) %>%
-        head(50) %>%
-        pull(symbol)
+    if (usetop) {
+        genes <- res %>%
+            arrange(desc(abs(log2FoldChange))) %>%
+            head(50) %>%
+            pull(symbol)
+    }
     
     mtx <- vsd[genes,]
     
     return(mtx)
 }
 
-get_nm_count_dds <- function(dds, res, var) {
+get_nm_count_dds <- function(dds, res, genes, var, usetop) {
 
     res %<>%
         deseq_transform(p_co = 1, lfc_co = 0)
     
-    genes <- res %>%
-        arrange(desc(abs(log2FoldChange))) %>%
-        head(10) %>%
-        pull(symbol)
+    if (usetop) {
+        genes <- res %>%
+            arrange(desc(abs(log2FoldChange))) %>%
+            head(10) %>%
+            pull(symbol)
+    }
     
     df_list <- list()
     

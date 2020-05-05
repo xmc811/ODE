@@ -128,9 +128,9 @@ deseq_table <- function(res, p_co, lfc_co) {
     return(res)
 }
 
-deseq_cluster <- function(dds, res, palette, dir) {
+deseq_cluster <- function(dds, res, genes, palette, dir, usetop) {
     
-    mtx <- get_mtx_dds(dds, res)
+    mtx <- get_mtx_dds(dds, res, genes, usetop)
         
     mtx %<>%
         mtx_rescale()
@@ -154,9 +154,9 @@ deseq_cluster <- function(dds, res, palette, dir) {
 }
 
 
-deseq_box <- function(dds, res, var, palette) {
+deseq_box <- function(dds, res, genes, var, palette, usetop) {
     
-    df <- get_nm_count_dds(rnaseq[[1]], rnaseq[[2]], var)
+    df <- get_nm_count_dds(rnaseq[[1]], rnaseq[[2]], genes, var, usetop)
     
     ggplot(df) +
         geom_boxplot(aes(x = !!sym(var),
@@ -169,17 +169,21 @@ deseq_box <- function(dds, res, var, palette) {
 }
 
 
-deseq_gsea <- function(res) {
+deseq_gsea <- function(res, pathways, usehmk) {
     
     res <- deseq_to_stat(res)
     
-    gsea_res <- fgsea(pathways = hmks_hs, 
+    if (usehmk) {
+        pathways <- hmks_hs
+    }
+    
+    gsea_res <- fgsea(pathways = pathways, 
                       stats = res, 
                       nperm = 50000)
     
     gsea_res %>%
         mutate(pathway = str_remove(string = pathway, pattern = "HALLMARK_")) %>%
-        mutate(color = -log10(padj) * ifelse(padj <= 0.05, 1, 0) * ifelse(NES > 0, 1, -1)) %>%
+        mutate(color = -log10(padj) * ifelse(padj <= 1, 1, 0) * ifelse(NES > 0, 1, -1)) %>%
         ggplot() +
         geom_bar(aes(x = reorder(pathway, NES), y = NES, fill = color), stat = "identity") +
         scale_fill_gradient2(high = "#d7301f", 

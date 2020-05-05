@@ -15,6 +15,9 @@ library(maftools)
 
 rnaseq <- readRDS("./data/rnaseq.rds")
 hmks_hs <- gmtPathways("./data/h.all.v7.0.symbols.gmt")
+rna_genes <- readLines("./data/rna_genes.txt")
+rna_pathways <- read_csv("./data/rna_pathways.csv", col_names = FALSE) %>%
+    df_to_signature()
 
 # example input files
 
@@ -162,20 +165,26 @@ server <- function(input, output) {
     
     output$deseq_box <- renderPlot({
         deseq_box(rnaseq[[1]], 
-                      rnaseq[[2]], 
-                      input$pca_var, 
-                      input$palette_cat)
+                  rnaseq[[2]],
+                  rna_genes[1:6],
+                  input$pca_var, 
+                  input$palette_cat,
+                  input$rna_top_gene)
     }, height = 700, width = 800)
     
     output$deseq_cluster <- renderPlot({
         deseq_cluster(rnaseq[[1]], 
-                      rnaseq[[2]], 
+                      rnaseq[[2]],
+                      rna_genes,
                       input$palette_con, 
-                      input$palette_dir)
+                      input$palette_dir,
+                      input$rna_top_gene)
     }, height = 700)
     
     output$deseq_gsea <- renderPlot({
-        deseq_gsea(rnaseq[[2]])
+        deseq_gsea(rnaseq[[2]],
+                   rna_pathways,
+                   input$rna_hallmark)
     }, height = 600)
     
     
