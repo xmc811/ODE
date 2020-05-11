@@ -179,7 +179,7 @@ deseq_gsea <- function(res, pathways, usehmk) {
     
     gsea_res <- fgsea(pathways = pathways, 
                       stats = res, 
-                      nperm = 50000)
+                      nperm = 10000)
     
     gsea_res %>%
         mutate(pathway = str_remove(string = pathway, pattern = "HALLMARK_")) %>%

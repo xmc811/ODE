@@ -1,30 +1,9 @@
 
-library(shiny)
-library(shinythemes)
-library(tidyverse)
-library(magrittr)
-library(DESeq2)
-library(DT)
-library(RColorBrewer)
-library(circlize)
-library(ComplexHeatmap)
-library(scales)
-library(fgsea)
-library(maftools)
 
-dnaMaf <- "./data/DNA_filtered__mutect_Pindel_GM_pipe_201002.maf"
-rnaTsv <- "./data/RNA_merged_HTseq_count.tsv"
-rppa <- "./data/IACS__RPPA.txt"
-
+source("loading.R")
 source("helpers.R")
 source("tab_design.R")
 source("visualization.R")
-
-rnaseq <- readRDS("./data/rnaseq.rds")
-hmks_hs <- gmtPathways("./data/h.all.v7.0.symbols.gmt")
-rna_genes <- readLines("./data/rna_genes.txt")
-rna_pathways <- read_csv("./data/rna_pathways.csv", col_names = FALSE) %>%
-    df_to_signature()
 
 
 
