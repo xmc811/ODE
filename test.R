@@ -16,3 +16,22 @@ a <- get_nm_count_dds(rnaseq[[1]], rnaseq[[2]], "Grade")
 rnaseq[[2]]@elementMetadata[2,2]
 
 deseq_box(rnaseq[[1]], rnaseq[[2]], "Grade", "Set2")
+
+
+invisible(lapply(paste0('package:', 
+                        names(sessionInfo()$otherPkgs)), 
+                 detach, character.only=TRUE, unload=TRUE))
+
+system.time(library(DESeq2))
+
+
+packages <- c("shiny", "shinythemes", "tidyverse", "magrittr", "DESeq2","DT", 
+              "RColorBrewer", "circlize", "ComplexHeatmap", "scales",
+              "fgsea", "maftools")
+
+for (i in packages) {
+    print(i)
+    print(system.time(library(i, character.only = TRUE)))
+}
+
+system.time(lapply(packages, require, character.only = TRUE))

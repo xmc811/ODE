@@ -4,3 +4,4 @@ packages <- c("shiny", "shinythemes", "tidyverse", "magrittr", "DESeq2","DT",
               "fgsea", "maftools")
 
 lapply(packages, require, character.only = TRUE)
+
