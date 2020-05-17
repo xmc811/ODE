@@ -168,7 +168,7 @@ server <- function(input, output, session) {
         
         library(DESeq2)
         
-        rna_input <- if(input$rna_use_sample) {
+        rna_input <- if(input$data_source == "Example") {
             reactive({readRDS("./data/rnaseq.rds")})
         } else {
             reactive({
@@ -202,6 +202,9 @@ server <- function(input, output, session) {
         }, height = 700, width = 800)
         
         output$deseq_pca <- renderPlot({
+            validate(
+                need(input$pca_var, "")
+            )
             if (is.numeric(rna_input()[[1]]@colData[[input$pca_var]])) {
                 deseq_pca(rna_input()[[1]], 
                           input$pca_var, 
@@ -236,6 +239,9 @@ server <- function(input, output, session) {
         })
         
         output$deseq_box <- renderPlot({
+            validate(
+                need(input$pca_var, "")
+            )
             deseq_box(rna_input()[[1]], 
                       rna_input()[[2]],
                       rna_genes[1:6],

@@ -141,19 +141,26 @@ tab_rna <- tabPanel(
     sidebarLayout(
 
         sidebarPanel = sidebarPanel(
-            h4("RNA-seq Data"),
-            splitLayout(checkboxInput(inputId = "rna_use_sample",
-                                      label = "Use sample data",
-                                      value = TRUE),
-                        actionButton(inputId = "rna_start", 
-                                     label = "Launch",
-                                     icon = icon("chart-bar")),
-                        cellWidths = c("50%", "50%")),
-            tags$style(type='text/css', 
-                       "#rna_start {float:right; margin-right: 5px;}"),
-            fileInput(inputId = "rna_input",
-                      label = NULL,
-                      buttonLabel = "Browse.."),
+            h4("RNA-seq Data Source"),
+            splitLayout(radioGroupButtons(inputId = "data_source",
+                                          label = NULL,
+                                          choices = c("Example","Upload"),
+                                          justified = TRUE),
+                        actionButton(
+                            inputId = "rna_start",
+                            label = "Launch",
+                            icon = icon("bar-chart"),
+                            style = "color: white; background-color: #0570b0;
+                            float:right; margin-right: 5px;"),
+                        
+                        cellWidths = c("67%", "33%")),
+            
+            conditionalPanel(
+                condition = "input.data_source == 'Upload'",
+                fileInput(inputId = "rna_input",
+                          label = NULL,
+                          buttonLabel = "Browse.."),
+            ),
             
             conditionalPanel(
                 condition = "input.rna_panel == 1 || 
@@ -183,13 +190,24 @@ tab_rna <- tabPanel(
                             input.rna_panel == 7",
                 
                 h4("Gene List"),
-                splitLayout(fileInput(inputId = "rna_genes",
-                                      label = NULL,
-                                      buttonLabel = "Browse.."),
-                            checkboxInput(inputId = "rna_top_gene",
-                                          label = "Use top genes",
-                                          value = TRUE),
-                            cellWidths = c("70%", "30%"))
+                radioGroupButtons(inputId = "rna_gene_ls_src",
+                                  label = NULL,
+                                  choices = c("Use Top Genes",
+                                              "Manual Input",
+                                              "Upload File"),
+                                  justified = TRUE),
+                conditionalPanel(
+                    condition = "input.rna_gene_ls_src == 'Manual Input'",
+                    textInput("rna_genes_type", 
+                              label = NULL, 
+                              value = ""),
+                ),
+                conditionalPanel(
+                    condition = "input.rna_gene_ls_src == 'Upload File'",
+                    fileInput(inputId = "rna_genes_file",
+                              label = NULL,
+                              buttonLabel = "Browse..")
+                )
             ),
             
             conditionalPanel(
