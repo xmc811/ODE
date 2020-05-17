@@ -213,13 +213,19 @@ tab_rna <- tabPanel(
                 condition = "input.rna_panel == 8",
                 
                 h4("Pathway List"),
-                splitLayout(fileInput(inputId = "rna_pathways",
-                                      label = NULL,
-                                      buttonLabel = "Browse.."),
-                            checkboxInput(inputId = "rna_hallmark",
-                                          label = "Use Hallmarks",
-                                          value = TRUE),
-                            cellWidths = c("70%", "30%")),
+                splitLayout(radioGroupButtons(inputId = "rna_pathway_src",
+                                              label = NULL,
+                                              choices = c("Use Hallmarks",
+                                                          "Upload File"),
+                                              justified = TRUE),
+                            cellWidths = "67%"),
+                
+                conditionalPanel(
+                    condition = "input.rna_pathway_src == 'Upload File'",
+                    fileInput(inputId = "rna_pathway_file",
+                              label = NULL,
+                              buttonLabel = "Browse..")
+                )
             ),
             
             conditionalPanel(
@@ -228,6 +234,7 @@ tab_rna <- tabPanel(
                             input.rna_panel == 6 || 
                             input.rna_panel == 7",
                 
+                h4("Plotting Parameters"),
                 splitLayout(selectInput(inputId = "palette_cat", 
                                         label = "Categorical Palette",
                                         choices = rownames(brewer.pal.info[brewer.pal.info$category == "qual",]),
@@ -236,10 +243,12 @@ tab_rna <- tabPanel(
                                         label = "Continuous Palette",
                                         choices = rownames(brewer.pal.info[brewer.pal.info$category != "qual",]),
                                         selected = "Spectral")),
-                
-                checkboxInput(inputId = "palette_dir",
-                              label = "Reverse Scale Color Direction",
-                              value = FALSE)
+                materialSwitch(
+                    inputId = "palette_dir",
+                    label = "Reverse Scale Color Direction",
+                    value = FALSE,
+                    right = TRUE
+                )
             ),
             
             
@@ -248,6 +257,7 @@ tab_rna <- tabPanel(
                 condition = "input.rna_panel == 3 || 
                             input.rna_panel == 4",
                 
+                h4("Plotting Parameters"),
                 splitLayout(numericInput("p_plot_lim", 
                                          label = "Adjusted P-value Squash", 
                                          value = 5),
