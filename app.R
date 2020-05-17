@@ -20,7 +20,11 @@ ui <- navbarPage(
     tab_rppa,
     tab_scrna,
     tab_integrate,
-    tab_about
+    tab_about,
+    
+    tags$head(tags$link(rel="stylesheet", 
+                        type="text/css", 
+                        href="style.css"))
 )
 
 # server function

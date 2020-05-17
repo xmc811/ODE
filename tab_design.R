@@ -138,9 +138,11 @@ tab_rna <- tabPanel(
     value = "v_rna",
 
     sidebarLayout(
-
+        
         sidebarPanel = sidebarPanel(
-            h4("RNA-seq Data Source"),
+            h3("RNA-seq Data Analysis"),
+            br(),
+            h4("Data Source"),
             splitLayout(radioGroupButtons(inputId = "data_source",
                                           label = NULL,
                                           choices = c("Example","Upload"),
@@ -158,8 +160,9 @@ tab_rna <- tabPanel(
                 condition = "input.data_source == 'Upload'",
                 fileInput(inputId = "rna_input",
                           label = NULL,
-                          buttonLabel = "Browse.."),
-            ),
+                          buttonLabel = "Browse..")
+                ),
+            br(),
             
             conditionalPanel(
                 condition = "input.rna_panel == 1 || 
@@ -181,7 +184,8 @@ tab_rna <- tabPanel(
                                          value = 0.05),
                             numericInput("lfc_co", 
                                          label = "Log2 Fold Change Cutoff", 
-                                         value = 1))
+                                         value = 1)),
+                br()
             ),
             
             conditionalPanel(
@@ -197,16 +201,26 @@ tab_rna <- tabPanel(
                                   justified = TRUE),
                 conditionalPanel(
                     condition = "input.rna_gene_ls_src == 'Manual Input'",
-                    textInput("rna_genes_type", 
-                              label = NULL, 
-                              value = ""),
+                    splitLayout(textInput("rna_genes_type", 
+                                          label = NULL, 
+                                          value = ""),
+                                actionButton(
+                                    inputId = "rna_gene_read",
+                                    label = "Done",
+                                    icon = icon("check"),
+                                    style = "color: white; background-color: #737373;
+                            float:right; margin-right: 5px;"),
+                                cellWidths = c("75%", "25%")
+                                )
+                    
                 ),
                 conditionalPanel(
                     condition = "input.rna_gene_ls_src == 'Upload File'",
                     fileInput(inputId = "rna_genes_file",
                               label = NULL,
                               buttonLabel = "Browse..")
-                )
+                ),
+                br()
             ),
             
             conditionalPanel(
@@ -270,8 +284,7 @@ tab_rna <- tabPanel(
                               .shiny-split-layout > div {
                                 overflow: visible;
                               }
-                              "))),
-            br()
+                              ")))
         ),
         
         mainPanel(
