@@ -1,7 +1,10 @@
 
+
 packages <- c("shiny", "shinythemes", "tidyverse", "magrittr","DT", 
               "RColorBrewer", "circlize", "ComplexHeatmap", "scales",
-              "fgsea", "maftools")
+              "fgsea","maftools")
 
-lapply(packages, library, character.only = TRUE)
+lapply(packages, require, character.only = TRUE)
+
+
 
