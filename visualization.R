@@ -156,7 +156,7 @@ deseq_cluster <- function(dds, res, genes, palette, dir, usetop) {
 
 deseq_box <- function(dds, res, genes, var, palette, usetop) {
     
-    df <- get_nm_count_dds(rnaseq[[1]], rnaseq[[2]], genes, var, usetop)
+    df <- get_nm_count_dds(dds, res, genes, var, usetop)
     
     ggplot(df) +
         geom_boxplot(aes(x = !!sym(var),

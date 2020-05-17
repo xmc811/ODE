@@ -168,9 +168,21 @@ server <- function(input, output, session) {
         
         library(DESeq2)
         
-        rna_input <- reactive({readRDS(input$rna_input$datapath)})
-        
+        rna_input <- if(input$rna_use_sample) {
+            reactive({readRDS("./data/rnaseq.rds")})
+        } else {
+            reactive({
+                validate(
+                    need(input$rna_input, 
+                         "Please Upload Data")
+                )
+                readRDS(input$rna_input$datapath)})
+        }
+            
         output$rna_var <- renderUI({
+            validate(
+                need(try(rna_input()), "")
+            )
             list(
             h4("Variable"),
             selectInput(inputId = "pca_var", 
@@ -180,6 +192,9 @@ server <- function(input, output, session) {
         })
 
         output$deseq_hm <- renderPlot({
+            validate(
+                need(input$pca_var, "")
+            )
             deseq_heatmap(rna_input()[[1]], 
                           input$pca_var,
                           input$palette_con,
@@ -187,27 +202,27 @@ server <- function(input, output, session) {
         }, height = 700, width = 800)
         
         output$deseq_pca <- renderPlot({
-            if (is.numeric(rnaseq[[1]]@colData[[input$pca_var]])) {
-                deseq_pca(rnaseq[[1]], 
+            if (is.numeric(rna_input()[[1]]@colData[[input$pca_var]])) {
+                deseq_pca(rna_input()[[1]], 
                           input$pca_var, 
                           input$palette_con,
                           ifelse(input$palette_dir, 1, -1))
             } else {
-                deseq_pca(rnaseq[[1]], 
+                deseq_pca(rna_input()[[1]], 
                           input$pca_var, 
                           input$palette_cat)
             }
         }, height = 600)
         
         output$deseq_ma <- renderPlot({
-            deseq_ma(rnaseq[[2]],
+            deseq_ma(rna_input()[[2]],
                      input$p_co, 
                      input$lfc_co,
                      input$lfc_plot_lim)
         }, height = 600)
         
         output$deseq_volcano <- renderPlot({
-            deseq_volcano(rnaseq[[2]], 
+            deseq_volcano(rna_input()[[2]], 
                           input$p_co, 
                           input$lfc_co,
                           input$p_plot_lim,
@@ -215,12 +230,14 @@ server <- function(input, output, session) {
         }, height = 600)
         
         output$deseq_table <- DT::renderDataTable({
-            deseq_table(rnaseq[[2]], input$p_co, input$lfc_co)
+            deseq_table(rna_input()[[2]], 
+                        input$p_co, 
+                        input$lfc_co)
         })
         
         output$deseq_box <- renderPlot({
-            deseq_box(rnaseq[[1]], 
-                      rnaseq[[2]],
+            deseq_box(rna_input()[[1]], 
+                      rna_input()[[2]],
                       rna_genes[1:6],
                       input$pca_var, 
                       input$palette_cat,
@@ -228,8 +245,8 @@ server <- function(input, output, session) {
         }, height = 700, width = 800)
         
         output$deseq_cluster <- renderPlot({
-            deseq_cluster(rnaseq[[1]], 
-                          rnaseq[[2]],
+            deseq_cluster(rna_input()[[1]], 
+                          rna_input()[[2]],
                           rna_genes,
                           input$palette_con, 
                           input$palette_dir,
@@ -237,7 +254,7 @@ server <- function(input, output, session) {
         }, height = 700)
         
         output$deseq_gsea <- renderPlot({
-            deseq_gsea(rnaseq[[2]],
+            deseq_gsea(rna_input()[[2]],
                        rna_pathways,
                        input$rna_hallmark)
         }, height = 600)

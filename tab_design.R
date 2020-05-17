@@ -142,7 +142,7 @@ tab_rna <- tabPanel(
 
         sidebarPanel = sidebarPanel(
             h4("RNA-seq Data"),
-            splitLayout(checkboxInput(inputId = "rna_sample_data",
+            splitLayout(checkboxInput(inputId = "rna_use_sample",
                                       label = "Use sample data",
                                       value = TRUE),
                         actionButton(inputId = "rna_start", 
