@@ -142,6 +142,7 @@ tab_rna <- tabPanel(
         sidebarPanel = sidebarPanel(
             h3("RNA-seq Data Analysis"),
             br(),
+            
             h4("Data Source"),
             splitLayout(radioGroupButtons(inputId = "data_source",
                                           label = NULL,
@@ -200,13 +201,30 @@ tab_rna <- tabPanel(
                                               "Upload File"),
                                   justified = TRUE),
                 conditionalPanel(
+                    condition = "input.rna_gene_ls_src == 'Use Top Genes'",
+                    splitLayout(sliderInput(inputId = "rna_gene_num",
+                                            label = "Number of Genes", 
+                                            min = 1, max = 50, value = 6),
+                                actionButton(
+                                    inputId = "rna_gene_read",
+                                    label = "Plot",
+                                    icon = icon("check"),
+                                    style = "color: white; 
+                                    background-color: #737373;
+                                    margin-top: 25px;
+                                    float:right;
+                                    margin-right: 5px;"),
+                                cellWidths = c("75%", "25%")
+                    )
+                ),
+                conditionalPanel(
                     condition = "input.rna_gene_ls_src == 'Manual Input'",
-                    splitLayout(textInput("rna_genes_type", 
+                    splitLayout(textInput("rna_genes_man", 
                                           label = NULL, 
                                           value = ""),
                                 actionButton(
                                     inputId = "rna_gene_read",
-                                    label = "Done",
+                                    label = "Plot",
                                     icon = icon("check"),
                                     style = "color: white; background-color: #737373;
                             float:right; margin-right: 5px;"),
@@ -265,8 +283,6 @@ tab_rna <- tabPanel(
                 )
             ),
             
-            
-            
             conditionalPanel(
                 condition = "input.rna_panel == 3 || 
                             input.rna_panel == 4",
@@ -278,6 +294,18 @@ tab_rna <- tabPanel(
                             numericInput("lfc_plot_lim", 
                                          label = "Log2 Fold Change Squash", 
                                          value = 5)),
+            ),
+            
+            conditionalPanel(
+                condition = "input.rna_panel != 5",
+                
+                splitLayout(numericInput("rna_plot_height", 
+                                         "Plot Height (px)", 
+                                         value = 700),
+                            numericInput("rna_plot_width", 
+                                         "Plot Width (px)", 
+                                         value = 800),
+                            cellWidths = c("50%", "50%"))
             ),
             
             tags$head(tags$style(HTML("

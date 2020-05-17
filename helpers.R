@@ -50,7 +50,32 @@ deseq_transform <- function(res, p_co, lfc_co) {
     return(res)
 }
 
-get_mtx_dds <- function(dds, res, genes, usetop, raw = F) {
+get_rna_genes <- function(res, topn = 50) {
+    
+    genes <- res %>%
+        as.data.frame() %>%
+        rownames_to_column(var = "symbol") %>%
+        as_tibble() %>%
+        arrange(desc(abs(log2FoldChange))) %>%
+        head(topn) %>%
+        pull(symbol)
+    
+    return(genes)
+}
+
+parse_rna_genes <- function(gene_list) {
+    
+    genes <- str_split(gene_list, "(,|;)")[[1]]
+    
+    return(genes[genes != ""])
+}
+
+num_valid_genes <- function(dds, genes) {
+    
+    return(sum(genes %in% rownames(dds)))
+}
+
+get_mtx_dds <- function(dds, genes, raw = F) {
     
     if (raw) {
         vsd <- counts(dds)
@@ -59,34 +84,16 @@ get_mtx_dds <- function(dds, res, genes, usetop, raw = F) {
         vsd <- as.matrix(vsd@assays@data[[1]])
     }
     
-    res %<>%
-        deseq_transform(p_co = 1, lfc_co = 0)
-    
-    if (usetop) {
-        genes <- res %>%
-            arrange(desc(abs(log2FoldChange))) %>%
-            head(50) %>%
-            pull(symbol)
-    }
-    
     mtx <- vsd[genes,]
     
     return(mtx)
 }
 
-get_nm_count_dds <- function(dds, res, genes, var, usetop) {
-
-    res %<>%
-        deseq_transform(p_co = 1, lfc_co = 0)
-    
-    if (usetop) {
-        genes <- res %>%
-            arrange(desc(abs(log2FoldChange))) %>%
-            head(10) %>%
-            pull(symbol)
-    }
+get_nm_count_dds <- function(dds, genes, var) {
     
     df_list <- list()
+    
+    genes <- genes[genes %in% rownames(dds)]
     
     for (i in seq_along(1:length(genes))) {
         

@@ -23,8 +23,7 @@ deseq_heatmap <- function(dds, var, palette, dir) {
 
     Heatmap(sampleDistMatrix, 
             col = col_fun,
-            rect_gp = gpar(col = "white", lwd = 2),
-            width = unit(20, "cm"), height = unit(20, "cm"))
+            rect_gp = gpar(col = "white", lwd = 2))
 }
 
 deseq_pca <- function(dds, var, palette, dir) {
@@ -154,9 +153,9 @@ deseq_cluster <- function(dds, res, genes, palette, dir, usetop) {
 }
 
 
-deseq_box <- function(dds, res, genes, var, palette, usetop) {
+deseq_box <- function(dds, genes, var, palette) {
     
-    df <- get_nm_count_dds(dds, res, genes, var, usetop)
+    df <- get_nm_count_dds(dds, genes, var)
     
     ggplot(df) +
         geom_boxplot(aes(x = !!sym(var),

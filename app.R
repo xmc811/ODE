@@ -194,20 +194,36 @@ server <- function(input, output, session) {
                         choices = colnames(rna_input()[[1]]@colData))
             )
         })
+        
+        rna_plot_height <- reactive({
+            validate(
+                need(input$rna_plot_height < 4000, "Plot height shouldn't exceed 4000px")
+                )
+            return(input$rna_plot_height)
+        })
+        
+        rna_plot_width <- reactive({
+            validate(
+                need(input$rna_plot_width < 4000, "Plot width shouldn't exceed 4000px")
+            )
+            return(input$rna_plot_width)
+        })
 
         output$deseq_hm <- renderPlot({
             validate(
-                need(input$pca_var, "")
+                need(input$pca_var, "Please Upload Data")
             )
             deseq_heatmap(rna_input()[[1]], 
                           input$pca_var,
                           input$palette_con,
                           input$palette_dir)
-        }, height = 700, width = 800)
+        }, 
+        height = rna_plot_height, 
+        width = rna_plot_width)
         
         output$deseq_pca <- renderPlot({
             validate(
-                need(input$pca_var, "")
+                need(input$pca_var, "Please Upload Data")
             )
             if (is.numeric(rna_input()[[1]]@colData[[input$pca_var]])) {
                 deseq_pca(rna_input()[[1]], 
@@ -219,14 +235,18 @@ server <- function(input, output, session) {
                           input$pca_var, 
                           input$palette_cat)
             }
-        }, height = 600)
+        }, 
+        height = rna_plot_height, 
+        width = rna_plot_width)
         
         output$deseq_ma <- renderPlot({
             deseq_ma(rna_input()[[2]],
                      input$p_co, 
                      input$lfc_co,
                      input$lfc_plot_lim)
-        }, height = 600)
+        }, 
+        height = rna_plot_height, 
+        width = rna_plot_width)
         
         output$deseq_volcano <- renderPlot({
             deseq_volcano(rna_input()[[2]], 
@@ -234,7 +254,9 @@ server <- function(input, output, session) {
                           input$lfc_co,
                           input$p_plot_lim,
                           input$lfc_plot_lim)
-        }, height = 600)
+        }, 
+        height = rna_plot_height, 
+        width = rna_plot_width)
         
         output$deseq_table <- DT::renderDataTable({
             deseq_table(rna_input()[[2]], 
@@ -242,17 +264,39 @@ server <- function(input, output, session) {
                         input$lfc_co)
         })
         
+        rna_genes <- reactive({
+            if(input$rna_gene_ls_src == 'Use Top Genes') {
+                
+                return(get_rna_genes(rna_input()[[2]])[1:input$rna_gene_num])
+                
+                } else if (input$rna_gene_ls_src == 'Manual Input'){
+                    validate(
+                        need(input$rna_genes_man, 
+                             "Please Input Gene List")
+                        )
+                    return(parse_rna_genes(input$rna_genes_man))
+                } else {
+                    validate(
+                        need(input$rna_genes_file, 
+                             "Please Upload Gene List")
+                        )
+                    return(readLines(input$rna_genes_file$datapath))
+                    }
+            })
+        
+        
+        
         output$deseq_box <- renderPlot({
             validate(
-                need(input$pca_var, "")
+                need(input$pca_var, "Please Upload Data")
             )
             deseq_box(rna_input()[[1]], 
-                      rna_input()[[2]],
-                      rna_genes[1:6],
+                      rna_genes(),
                       input$pca_var, 
-                      input$palette_cat,
-                      input$rna_top_gene)
-        }, height = 700, width = 800)
+                      input$palette_cat)
+        }, 
+        height = rna_plot_height, 
+        width = rna_plot_width)
         
         output$deseq_cluster <- renderPlot({
             deseq_cluster(rna_input()[[1]], 
@@ -261,13 +305,17 @@ server <- function(input, output, session) {
                           input$palette_con, 
                           input$palette_dir,
                           input$rna_top_gene)
-        }, height = 700)
+        }, 
+        height = rna_plot_height, 
+        width = rna_plot_width)
         
         output$deseq_gsea <- renderPlot({
             deseq_gsea(rna_input()[[2]],
                        rna_pathways,
                        input$rna_hallmark)
-        }, height = 600)
+        }, 
+        height = rna_plot_height, 
+        width = rna_plot_width)
         
     })
     
