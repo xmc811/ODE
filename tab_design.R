@@ -301,7 +301,7 @@ tab_rna <- tabPanel(
                 
                 splitLayout(numericInput("rna_plot_height", 
                                          "Plot Height (px)", 
-                                         value = 700),
+                                         value = 600),
                             numericInput("rna_plot_width", 
                                          "Plot Width (px)", 
                                          value = 800),
