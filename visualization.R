@@ -166,13 +166,9 @@ deseq_box <- function(dds, genes, var, palette) {
 }
 
 
-deseq_gsea <- function(res, pathways, usehmk) {
+deseq_gsea <- function(res, pathways) {
     
     res <- deseq_to_stat(res)
-    
-    if (usehmk) {
-        pathways <- hmks_hs
-    }
     
     gsea_res <- fgsea(pathways = pathways, 
                       stats = res, 

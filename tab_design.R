@@ -4,8 +4,7 @@ rnaTsv <- "./data/RNA_merged_HTseq_count.tsv"
 rppa <- "./data/IACS__RPPA.txt"
 
 hmks_hs <- gmtPathways("./data/h.all.v7.0.symbols.gmt")
-rna_genes <- readLines("./data/rna_genes.txt")
-rna_pathways <- read_csv("./data/rna_pathways.csv", col_names = FALSE) %>% df_to_signature()
+
 
 tab_upload <- tabPanel(
 

@@ -313,10 +313,27 @@ server <- function(input, output, session) {
         height = rna_plot_height, 
         width = rna_plot_width)
         
+        
+        rna_pathways <- reactive({
+                
+                if(input$rna_pathway_src == 'Use Hallmarks') {
+                    
+                    hmks_hs
+                    
+                } else {
+                    
+                    validate(
+                        need(input$rna_pathway_file, "Please Upload Pathway File")
+                    )
+                    read_csv(input$rna_pathway_file$datapath, 
+                             col_names = FALSE) %>%
+                        df_to_signature()
+                    
+                }})
+        
         output$deseq_gsea <- renderPlot({
             deseq_gsea(rna_input()[[2]],
-                       rna_pathways,
-                       input$rna_hallmark)
+                       rna_pathways())
         }, 
         height = rna_plot_height, 
         width = rna_plot_width)
