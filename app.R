@@ -197,14 +197,14 @@ server <- function(input, output, session) {
         
         rna_plot_height <- reactive({
             validate(
-                need(input$rna_plot_height < 4000, "Plot height shouldn't exceed 4000px")
+                need(input$rna_plot_height < 4000, "Plot height shouldn't exceed 4000px.")
                 )
             return(input$rna_plot_height)
         })
         
         rna_plot_width <- reactive({
             validate(
-                need(input$rna_plot_width < 4000, "Plot width shouldn't exceed 4000px")
+                need(input$rna_plot_width < 4000, "Plot width shouldn't exceed 4000px.")
             )
             return(input$rna_plot_width)
         })
@@ -264,28 +264,34 @@ server <- function(input, output, session) {
                         input$lfc_co)
         })
         
-        rna_genes <- reactive({
+        rna_genes <- eventReactive(
+            
+            c(input$rna_gene_read1,
+              input$rna_gene_read2,
+              input$rna_genes_file),
+            
+            {
+            
             if(input$rna_gene_ls_src == 'Use Top Genes') {
+
+                get_rna_genes(rna_input()[[2]])[1:input$rna_gene_num]
                 
-                return(get_rna_genes(rna_input()[[2]])[1:input$rna_gene_num])
+            } else if (input$rna_gene_ls_src == 'Manual Input') {
                 
-                } else if (input$rna_gene_ls_src == 'Manual Input'){
-                    validate(
-                        need(input$rna_genes_man, 
-                             "Please Input Gene List")
+                validate(
+                        need(input$rna_genes_man, "Please Input Gene List")
                         )
-                    return(parse_rna_genes(input$rna_genes_man))
-                } else {
-                    validate(
-                        need(input$rna_genes_file, 
-                             "Please Upload Gene List")
+                parse_rna_genes(input$rna_genes_man)
+                
+            } else {
+                
+                validate(
+                        need(input$rna_genes_file, "Please Upload Gene List")
                         )
-                    return(readLines(input$rna_genes_file$datapath))
-                    }
-            })
+                readLines(input$rna_genes_file$datapath)
+            }})
         
-        
-        
+            
         output$deseq_box <- renderPlot({
             validate(
                 need(input$pca_var, "Please Upload Data")
@@ -300,11 +306,9 @@ server <- function(input, output, session) {
         
         output$deseq_cluster <- renderPlot({
             deseq_cluster(rna_input()[[1]], 
-                          rna_input()[[2]],
-                          rna_genes,
+                          rna_genes(),
                           input$palette_con, 
-                          input$palette_dir,
-                          input$rna_top_gene)
+                          input$palette_dir)
         }, 
         height = rna_plot_height, 
         width = rna_plot_width)

@@ -206,7 +206,7 @@ tab_rna <- tabPanel(
                                             label = "Number of Genes", 
                                             min = 1, max = 50, value = 6),
                                 actionButton(
-                                    inputId = "rna_gene_read",
+                                    inputId = "rna_gene_read1",
                                     label = "Plot",
                                     icon = icon("check"),
                                     style = "color: white; 
@@ -222,8 +222,9 @@ tab_rna <- tabPanel(
                     splitLayout(textInput("rna_genes_man", 
                                           label = NULL, 
                                           value = ""),
+                                
                                 actionButton(
-                                    inputId = "rna_gene_read",
+                                    inputId = "rna_gene_read2",
                                     label = "Plot",
                                     icon = icon("check"),
                                     style = "color: white; background-color: #737373;

@@ -65,14 +65,11 @@ get_rna_genes <- function(res, topn = 50) {
 
 parse_rna_genes <- function(gene_list) {
     
+    gene_list <- gsub("[[:space:]]", "", gene_list)
+    
     genes <- str_split(gene_list, "(,|;)")[[1]]
     
     return(genes[genes != ""])
-}
-
-num_valid_genes <- function(dds, genes) {
-    
-    return(sum(genes %in% rownames(dds)))
 }
 
 get_mtx_dds <- function(dds, genes, raw = F) {
@@ -84,7 +81,7 @@ get_mtx_dds <- function(dds, genes, raw = F) {
         vsd <- as.matrix(vsd@assays@data[[1]])
     }
     
-    mtx <- vsd[genes,]
+    mtx <- vsd[genes,,drop = FALSE]
     
     return(mtx)
 }
@@ -120,7 +117,7 @@ mtx_rescale <- function(mtx) {
     
     mtx2 <- mtx
     
-    for (i in 1:nrow(mtx)) {
+    for (i in seq_along(1:nrow(mtx))) {
         mtx2[i,] <- (mtx[i,] - min(mtx[i,]))/(max(mtx[i,]) - min(mtx[i,])) * 2 - 1
     }
     return(mtx2)

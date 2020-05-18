@@ -127,9 +127,9 @@ deseq_table <- function(res, p_co, lfc_co) {
     return(res)
 }
 
-deseq_cluster <- function(dds, res, genes, palette, dir, usetop) {
+deseq_cluster <- function(dds, genes, palette, dir) {
     
-    mtx <- get_mtx_dds(dds, res, genes, usetop)
+    mtx <- get_mtx_dds(dds, genes)
         
     mtx %<>%
         mtx_rescale()
@@ -147,9 +147,7 @@ deseq_cluster <- function(dds, res, genes, palette, dir, usetop) {
         
         Heatmap(mtx, 
                 col = col_fun,
-                rect_gp = gpar(col = "white", lwd = 2),
-                width = unit(20, "cm"), height = unit(20, "cm"))
-        
+                rect_gp = gpar(col = "white", lwd = 2))
 }
 
 
