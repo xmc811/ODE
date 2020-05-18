@@ -1,29 +1,39 @@
 
 deseq_heatmap <- function(dds, var, palette, dir) {
     
-    vsd <- vst(dds, blind = FALSE)
-    
-    sampleDists <- dist(t(assay(vsd)))
-    
-    sampleDistMatrix <- as.matrix(sampleDists)
-    rownames(sampleDistMatrix) <- vsd[[var]]
-    colnames(sampleDistMatrix) <- vsd[[var]]
-    
-    num <- num_colors(palette)
-    
-    colors <- brewer.pal(num,palette)
-    
-    if (dir) {
-        colors <- rev(colors)
-    }
-    
-    col_fun <- colorRamp2(seq(from = 0, 
-                              to = max(sampleDistMatrix), 
-                              length.out = num), colors)
-
-    Heatmap(sampleDistMatrix, 
-            col = col_fun,
-            rect_gp = gpar(col = "white", lwd = 2))
+    withProgress(message = "Plotting...", value = 0, {
+        
+        vsd <- vst(dds, blind = FALSE)
+        
+        incProgress(0.2)
+        
+        sampleDists <- dist(t(assay(vsd)))
+        
+        incProgress(0.1)
+        
+        sampleDistMatrix <- as.matrix(sampleDists)
+        rownames(sampleDistMatrix) <- vsd[[var]]
+        colnames(sampleDistMatrix) <- vsd[[var]]
+        
+        num <- num_colors(palette)
+        
+        colors <- brewer.pal(num,palette)
+        
+        if (dir) {
+            colors <- rev(colors)
+        }
+        
+        col_fun <- colorRamp2(seq(from = 0, 
+                                  to = max(sampleDistMatrix), 
+                                  length.out = num), colors)
+        
+        incProgress(0.4)
+        
+        Heatmap(sampleDistMatrix, 
+                col = col_fun,
+                rect_gp = gpar(col = "white", lwd = 2))
+        
+    })
 }
 
 deseq_pca <- function(dds, var, palette, dir) {

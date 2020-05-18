@@ -312,6 +312,15 @@ tab_rna <- tabPanel(
                               .shiny-split-layout > div {
                                 overflow: visible;
                               }
+                              .progress-bar {
+                              height: 20px;
+                              }
+                              .shiny-notification {
+                              width: 200px;
+                              top: 50%;
+                              right: 30%;
+                              position: fixed;
+                              }
                               ")))
         ),
         
@@ -328,19 +337,19 @@ tab_rna <- tabPanel(
                     value = 2,
                     title = "PCA",
                     br(),
-                    plotOutput("deseq_pca", width = "100%")
+                    plotOutput("deseq_pca", width = "100%") 
                 ),
                 tabPanel(
                     value = 3,
                     title = "MA Plot",
                     br(),
-                    plotOutput("deseq_ma", width = "100%"),
+                    plotOutput("deseq_ma", width = "100%") 
                 ),
                 tabPanel(
                     value = 4,
                     title = "Volcano Plot",
                     br(),
-                    plotOutput("deseq_volcano"),
+                    plotOutput("deseq_volcano")
                 ),
                 tabPanel(
                     value = 5,

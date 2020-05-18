@@ -5,7 +5,9 @@ source("helpers.R")
 source("tab_design.R")
 source("visualization.R")
 
-options(shiny.maxRequestSize = 100*1024^2)
+options(shiny.maxRequestSize = 100 * 1024 ^ 2)
+options(spinner.color = "#3182bd")
+options(spinner.type = 8)
 
 # user interface
 ui <- navbarPage(
