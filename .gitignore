@@ -5,3 +5,4 @@
 Dockerfile
 shiny-server.sh
 test.R
+rsconnect/
